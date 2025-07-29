@@ -1,15 +1,25 @@
-const { browser } = require('@wdio/globals')
-
-/**
-* main page object containing all methods, selectors and functionality
-* that is shared across all page objects
-*/
 module.exports = class Page {
     /**
-    * Opens a sub page of the page
-    * @param path path of the sub page (e.g. /path/to/page.html)
-    */
-    open (path) {
-        return browser.url(`https://the-internet.herokuapp.com/${path}`)
+     * Відкрити будь-яку сторінку за шляхом
+     * @param {string} path - шлях після базового URL
+     */
+    open(path) {
+        return browser.url(`https://www.saucedemo.com/${path}`);
     }
-}
+
+    /**
+     * Очікування видимості елемента
+     */
+    async waitAndClick(element) {
+        await element.waitForDisplayed();
+        await element.click();
+    }
+
+    /**
+     * Перевірка, що URL містить певний шлях
+     */
+    async isUrlContains(part) {
+        const url = await browser.getUrl();
+        return url.includes(part);
+    }
+};

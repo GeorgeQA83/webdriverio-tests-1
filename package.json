@@ -7,14 +7,22 @@
     "test": "wdio run ./wdio.conf.js",
     "wdio": "wdio run ./wdio.conf.js"
   },
-  "keywords": ["webdriverio", "e2e", "mocha", "automation"],
+  "keywords": [
+    "webdriverio",
+    "e2e",
+    "mocha",
+    "automation"
+  ],
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@wdio/cli": "^9.18.3",
-    "@wdio/local-runner": "^9.18.3",
-    "@wdio/mocha-framework": "^9.18.0",
-    "@wdio/spec-reporter": "^9.18.0",
-    "expect-webdriverio": "^5.4.0"
+    "@wdio/cli": "^8.45.0",
+    "@wdio/local-runner": "^8.45.0",
+    "@wdio/mocha-framework": "^8.45.0",
+    "@wdio/spec-reporter": "^8.43.0",
+    "chromedriver": "^138.0.4",
+    "expect-webdriverio": "^3.7.0",
+    "wdio-chromedriver-service": "^8.1.1",
+    "webdriverio": "^8.45.0"
   }
 }

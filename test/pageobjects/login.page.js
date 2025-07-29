@@ -1,40 +1,52 @@
-const { $ } = require('@wdio/globals')
 const Page = require('./page');
 
-/**
- * sub page containing specific selectors and methods for a specific page
- */
 class LoginPage extends Page {
-    /**
-     * define selectors using getter methods
-     */
-    get inputUsername () {
-        return $('#username');
+    get inputUsername() { return $('#user-name'); }
+    get inputPassword() { return $('#password'); }
+    get btnLogin() { return $('#login-button'); }
+    get cartIcon() { return $('.shopping_cart_link'); }
+    get inventoryItems() { return $$('.inventory_item'); }
+
+    async openLoginPage() {
+        await this.open(''); // відкриє https://www.saucedemo.com/
     }
 
-    get inputPassword () {
-        return $('#password');
-    }
-
-    get btnSubmit () {
-        return $('button[type="submit"]');
-    }
-
-    /**
-     * a method to encapsule automation code to interact with the page
-     * e.g. to login using username and password
-     */
-    async login (username, password) {
+    async enterUsername(username) {
         await this.inputUsername.setValue(username);
-        await this.inputPassword.setValue(password);
-        await this.btnSubmit.click();
     }
 
-    /**
-     * overwrite specific options to adapt it to page object
-     */
-    open () {
-        return super.open('login');
+    async enterPassword(password) {
+        await this.inputPassword.setValue(password);
+    }
+
+    async submitLogin() {
+        await this.btnLogin.click();
+    }
+
+    async isCartIconVisible() {
+        return this.cartIcon.isDisplayed();
+    }
+
+    async getUsernameValue() {
+        return this.inputUsername.getValue();
+    }
+
+    async getPasswordType() {
+        return this.inputPassword.getAttribute('type');
+    }
+
+    async getInventoryItemsCount() {
+        return (await this.inventoryItems).length;
+    }
+
+    async isOnInventoryPage() {
+        return this.isUrlContains('/inventory'); // метод з базового класу
+    }
+
+    async login(username, password) {
+        await this.enterUsername(username);
+        await this.enterPassword(password);
+        await this.submitLogin();
     }
 }
 
