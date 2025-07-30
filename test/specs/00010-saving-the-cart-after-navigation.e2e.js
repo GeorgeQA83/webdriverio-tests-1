@@ -1,35 +1,29 @@
-const assert = require('assert');
+import assert from 'assert';
+import LoginPage from '../pageobjects/LoginPage.js';
+import InventoryPage from '../pageobjects/InventoryPage.js';
+import CartPage from '../pageobjects/CartPage.js';
 
 describe('Inventory Page - Cart persists after navigation', () => {
     before(async () => {
-        await browser.url('https://www.saucedemo.com');
-        await $('#user-name').setValue('standard_user');
-        await $('#password').setValue('secret_sauce');
-        await $('#login-button').click();
+        await LoginPage.open();
+        await LoginPage.login('standard_user', 'secret_sauce');
         await expect(browser).toHaveUrlContaining('/inventory');
     });
 
     it('should add two items and keep them after navigating away and back', async () => {
-        const buttons = await $$('button.btn_inventory');
-        await buttons[0].click();
-        await buttons[1].click();
+        await InventoryPage.addProducts(2);
 
-        const badge = await $('.shopping_cart_badge');
-        assert.strictEqual(await badge.getText(), '2');
+        const countBefore = await InventoryPage.getCartCount();
+        assert.strictEqual(countBefore, 2, 'Cart count before navigation should be 2');
 
-        await $('#react-burger-menu-btn').click();
-        await browser.pause(300);
-        await $('#about_sidebar_link').click();
+        await InventoryPage.navigateAwayAndBack();
 
-        await browser.back();
+        const countAfter = await InventoryPage.getCartCount();
+        assert.strictEqual(countAfter, 2, 'Cart count after navigation should still be 2');
 
-        const badgeAgain = await $('.shopping_cart_badge');
-        assert.strictEqual(await badgeAgain.getText(), '2');
+        await CartPage.openCart();
 
-        await $('.shopping_cart_link').click();
-        await expect(browser).toHaveUrlContaining('/cart');
-
-        const cartItems = await $$('.cart_item');
-        assert.strictEqual(cartItems.length, 2);
+        const cartCount = await CartPage.getItemCount();
+        assert.strictEqual(cartCount, 2, 'Cart page should display 2 items');
     });
 });

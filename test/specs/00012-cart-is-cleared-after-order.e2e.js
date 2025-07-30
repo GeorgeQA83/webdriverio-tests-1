@@ -1,47 +1,39 @@
-const assert = require('assert');
+import assert from 'assert';
+import InventoryPage from '../pageobjects/InventoryPage.js';
+import CartPage from '../pageobjects/CartPage.js';
+import CheckoutPage from '../pageobjects/CheckoutPage.js';
+import CheckoutCompletePage from '../pageobjects/CheckoutCompletePage.js';
+import LoginPage from '../pageobjects/LoginPage.js';
 
 describe('Checkout - Cart is cleared after order is completed', () => {
     before(async () => {
-        await browser.url('https://www.saucedemo.com');
-        await $('#user-name').setValue('standard_user');
-        await $('#password').setValue('secret_sauce');
-        await $('#login-button').click();
+        await LoginPage.login('standard_user', 'secret_sauce');
         await expect(browser).toHaveUrlContaining('/inventory');
     });
 
     it('should clear cart after completing order', async () => {
-        const firstProductButton = await $('button.btn_inventory');
-        await firstProductButton.click();
+        await InventoryPage.addProduct();
 
-        const cartBadge = await $('.shopping_cart_badge');
-        assert.strictEqual(await cartBadge.getText(), '1', 'Cart badge should show 1 item');
+        assert.strictEqual(await InventoryPage.getCartCount(), 1);
 
-        await $('.shopping_cart_link').click();
-        await $('#checkout').click();
+        await InventoryPage.goToCart();
 
-        await $('#first-name').setValue('Geo');
-        await $('#last-name').setValue('Irem');
-        await $('#postal-code').setValue('49000');
-        await $('#continue').click();
+        await CartPage.proceedToCheckout();
 
-        await $('#finish').click();
-        await expect(browser).toHaveUrlContaining('/checkout-complete');
+        await CheckoutPage.fillCustomerInfo('Geo', 'Irem', '49000');
 
-        const successMessage = await $('.complete-header');
-        assert.strictEqual(
-            await successMessage.getText(),
-            'Thank you for your order!',
-            'Order confirmation message should be shown'
-        );
+        await CheckoutPage.finishOrder();
 
-        await $('#back-to-products').click();
-        await expect(browser).toHaveUrlContaining('/inventory');
+        await CheckoutCompletePage.verifyOrderSuccess();
 
-        const cartBadgeExists = await $('.shopping_cart_badge').isExisting();
-        assert.strictEqual(cartBadgeExists, false, 'Cart badge should not be visible after order');
+        await CheckoutCompletePage.backToInventory();
 
-        await $('.shopping_cart_link').click();
-        const cartItems = await $$('.cart_item');
-        assert.strictEqual(cartItems.length, 0, 'Cart should be empty after order completion');
+        const cartCount = await InventoryPage.getCartCount();
+        assert.strictEqual(cartCount, 0, 'Cart badge should not be visible after order');
+
+        await InventoryPage.goToCart();
+
+        const cartItemsCount = await CartPage.getItemCount();
+        assert.strictEqual(cartItemsCount, 0, 'Cart should be empty after order completion');
     });
 });

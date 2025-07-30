@@ -1,36 +1,33 @@
-const assert = require('assert');
+import assert from 'assert';
+import InventoryPage from '../pageobjects/InventoryPage.js';
 
 describe('Cart - Re-adding item after removal', () => {
     before(async () => {
-        await browser.url('https://www.saucedemo.com');
-        await $('#user-name').setValue('standard_user');
-        await $('#password').setValue('secret_sauce');
-        await $('#login-button').click();
+        await InventoryPage.open();
+        await InventoryPage.login('standard_user', 'secret_sauce');
         await expect(browser).toHaveUrlContaining('/inventory');
     });
 
     it('should allow re-adding the same item after removing it from the cart', async () => {
-        const firstAddButton = await $('button.btn_inventory');
-        await firstAddButton.click();
+        await InventoryPage.addProductByIndex(0);
 
-        let badge = await $('.shopping_cart_badge');
-        assert.strictEqual(await badge.getText(), '1');
+        let badgeCount = await InventoryPage.getCartCount();
+        assert.strictEqual(badgeCount, 1);
 
-        await $('.shopping_cart_link').click();
+        await InventoryPage.goToCart();
         await expect(browser).toHaveUrlContaining('/cart');
 
-        const removeButton = await $('button.cart_button');
-        await removeButton.click();
+        await InventoryPage.removeProduct(0);
 
         const cartItemsAfter = await $$('.cart_item');
         assert.strictEqual(cartItemsAfter.length, 0);
 
         await browser.url('https://www.saucedemo.com/inventory.html');
+        await expect(browser).toHaveUrlContaining('/inventory');
 
-        const addButtonAgain = await $('button.btn_inventory');
-        await addButtonAgain.click();
+        await InventoryPage.addProductByIndex(0);
 
-        badge = await $('.shopping_cart_badge');
-        assert.strictEqual(await badge.getText(), '1');
+        badgeCount = await InventoryPage.getCartCount();
+        assert.strictEqual(badgeCount, 1);
     });
 });

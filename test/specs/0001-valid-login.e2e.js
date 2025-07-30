@@ -1,20 +1,17 @@
+import LoginPage from '../pageobjects/LoginPage.js';
+import InventoryPage from '../pageobjects/InventoryPage.js';
+
 describe('Login Page', () => {
     it('should log in with valid credentials', async () => {
-        await browser.url('https://www.saucedemo.com/');
-        const usernameInput = await $('#user-name');
-        await usernameInput.setValue('standard_user');
-        const usernameValue = await usernameInput.getValue();
-        expect(usernameValue).toBe('standard_user');
-        const passwordInput = await $('#password');
-        await passwordInput.setValue('secret_sauce');
-        const passwordType = await passwordInput.getAttribute('type');
-        expect(passwordType).toBe('password');
-        const loginButton = await $('#login-button');
-        await loginButton.click();
+        await LoginPage.open();
+        await LoginPage.login('standard_user', 'secret_sauce');
+
         await expect(browser).toHaveUrlContaining('/inventory');
-        const inventoryItems = await $$('.inventory_item');
-        expect(inventoryItems.length).toBeGreaterThan(0);
-        const cartIcon = await $('.shopping_cart_link');
-        expect(await cartIcon.isDisplayed()).toBe(true);
+
+        const items = await InventoryPage.productButtons;
+        expect(items.length).toBeGreaterThan(0);
+
+        const cartVisible = await InventoryPage.cartLink.isDisplayed();
+        expect(cartVisible).toBe(true);
     });
 });

@@ -1,17 +1,15 @@
-const assert = require('assert');
+import assert from 'assert';
+import LoginPage from '../pageobjects/LoginPage.js';
 
 describe('Login - Locked out user', () => {
     it('should show error when locked out user tries to login', async () => {
-        await browser.url('https://www.saucedemo.com');
-        await $('#user-name').setValue('locked_out_user');
-        await $('#password').setValue('secret_sauce');
-        await $('#login-button').click();
+        await LoginPage.open();
+        await LoginPage.login('locked_out_user', 'secret_sauce');
 
-        const errorContainer = await $('.error-message-container');
-        const isDisplayed = await errorContainer.isDisplayed();
-        assert.strictEqual(isDisplayed, true);
+        const isErrorShown = await LoginPage.isErrorDisplayed();
+        assert.strictEqual(isErrorShown, true, 'Error message should be displayed');
 
-        const errorText = await errorContainer.getText();
-        assert.match(errorText.toLowerCase(), /locked out/i);
+        const errorText = await LoginPage.getErrorMessage();
+        assert.match(errorText.toLowerCase(), /locked out/i, 'Error message should mention that the user is locked out');
     });
 });

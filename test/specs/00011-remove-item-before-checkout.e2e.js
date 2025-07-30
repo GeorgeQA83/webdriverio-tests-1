@@ -1,54 +1,47 @@
-const assert = require('assert');
+import assert from 'assert';
+import InventoryPage from '../pageobjects/InventoryPage.js';
+import CartPage from '../pageobjects/CartPage.js';
+import CheckoutPage from '../pageobjects/CheckoutPage.js';
+import CheckoutOverviewPage from '../pageobjects/CheckoutOverviewPage.js';
+import LoginPage from '../pageobjects/LoginPage.js';
 
 describe('Cart - Remove item before checkout', () => {
     before(async () => {
-        await browser.url('https://www.saucedemo.com');
-        await $('#user-name').setValue('standard_user');
-        await $('#password').setValue('secret_sauce');
-        await $('#login-button').click();
+        await LoginPage.open();
+        await LoginPage.login('standard_user', 'secret_sauce');
         await expect(browser).toHaveUrlContaining('/inventory');
     });
 
     it('should remove item from cart and continue checkout with correct total', async () => {
-        const buttons = await $$('button.btn_inventory');
-        await buttons[0].click();
-        await buttons[1].click();
+        await InventoryPage.addProducts(2);
 
-        const badge = await $('.shopping_cart_badge');
-        assert.strictEqual(await badge.getText(), '2');
+        const cartCountAfterAdd = await InventoryPage.getCartCount();
+        assert.strictEqual(cartCountAfterAdd, 2, 'Cart count after adding 2 products should be 2');
 
-        await $('.shopping_cart_link').click();
-        await expect(browser).toHaveUrlContaining('/cart');
+        await InventoryPage.goToCart();
 
-        const cartItemsBefore = await $$('.cart_item');
-        assert.strictEqual(cartItemsBefore.length, 2);
+        const cartItemCount = await CartPage.getItemCount();
+        assert.strictEqual(cartItemCount, 2, 'Cart page should display 2 items');
 
-        const removeButtons = await $$('button.cart_button');
-        await removeButtons[0].click();
+        await CartPage.removeItem(0);
 
-        const cartItemsAfter = await $$('.cart_item');
-        assert.strictEqual(cartItemsAfter.length, 1);
+        const cartItemCountAfterRemove = await CartPage.getItemCount();
+        assert.strictEqual(cartItemCountAfterRemove, 1, 'Cart page should display 1 item after removal');
 
-        const newBadge = await $('.shopping_cart_badge');
-        assert.strictEqual(await newBadge.getText(), '1');
+        const badgeCount = await InventoryPage.getCartCount();
+        assert.strictEqual(badgeCount, 1, 'Cart badge should show 1 item after removal');
 
-        await $('#checkout').click();
-        await $('#first-name').setValue('Test');
-        await $('#last-name').setValue('User');
-        await $('#postal-code').setValue('00000');
-        await $('#continue').click();
+        await CartPage.proceedToCheckout();
 
+        await CheckoutPage.fillCustomerInfo('Test', 'User', '00000');
         await expect(browser).toHaveUrlContaining('/checkout-step-two');
 
-        const overviewItems = await $$('.cart_item');
-        assert.strictEqual(overviewItems.length, 1);
+        const checkoutItemCount = await CheckoutOverviewPage.getItemCount();
+        assert.strictEqual(checkoutItemCount, 1, 'Checkout overview should list 1 item');
 
-        const itemPriceElement = await $('.inventory_item_price');
-        const itemPrice = parseFloat((await itemPriceElement.getText()).replace('$', ''));
+        const itemPrice = await CheckoutOverviewPage.getItemPrice();
+        const total = await CheckoutOverviewPage.getTotal();
 
-        const totalElement = await $('.summary_total_label');
-        const total = parseFloat((await totalElement.getText()).replace('Total: $', ''));
-
-        assert.ok(total >= itemPrice, 'Total should be equal to or greater than item price');
+        assert.ok(total >= itemPrice, 'Total price should be equal or greater than item price');
     });
 });

@@ -1,6 +1,6 @@
-const { join } = require('path');
+import { join } from 'path';
 
-exports.config = {
+export const config = {
     runner: 'local',
 
     specs: [
